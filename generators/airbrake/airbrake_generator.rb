@@ -91,4 +91,33 @@ class AirbrakeGenerator < Rails::Generator::Base
   def plugin_is_present?
     File.exists?('vendor/plugins/airbrake')
   end
+
+  # Legacy Issues
+  # http://help.airbrake.io/kb/installing-airbrake-in-your-application/installing-airbrake-in-a-rails-application
+  # Rails 2.3 + Ruby 1.8.7
+  # Error:
+  # undefined local variable or method `configuration_output'
+  # The Airbrake gem has two "airbrake_generator.rb" files.
+  # You must copy the definitions "secure?", "test_mode?", and "configuration_output"
+  # FROM: APP_ROOT/vendor/gems/airbrake-3.1.14/lib/rails/generators/airbrake/airbrake_generator.rb
+  # INTO: APP_ROOT/vendor/gems/airbrake-3.1.14/generators/airbrake/airbrake_generator.rb
+  # This should resolve the error and allow you to see notices in your control panel.
+  def secure?
+    options[:secure]
+  end
+
+  def test_mode?
+    options[:test_mode]
+  end
+
+  def configuration_output
+    output = <<-eos
+Airbrake.configure do |config|
+  config.api_key = #{api_key_expression}
+    eos
+
+    output << "  config.secure = true\n" if secure?
+    output << "  config.test_mode = true\n" if test_mode?
+    output << "end"
+  end
 end
