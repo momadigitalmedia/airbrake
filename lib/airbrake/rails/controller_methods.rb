@@ -72,8 +72,16 @@ module Airbrake
           url << ":#{request.port}"
         end
 
-        url << request.fullpath
+        url << request_path
         url
+      end
+
+      def request_path
+        if request.respond_to?(:full_path)
+          request.fullpath
+        else
+          request.request_uri
+        end
       end
 
       def airbrake_current_user
